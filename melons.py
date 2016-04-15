@@ -1,5 +1,6 @@
 """This file should have our order classes in it."""
 from random import randint
+from datetime import datetime
 
 class AbstractMelonOrder(object):
     """Parent class for all melon orders"""
@@ -16,11 +17,20 @@ class AbstractMelonOrder(object):
         self.country_code = country_code
         self.shipped = False
 
+
     def get_base_price(self):
         """Activates Splurge Pricing by setting the base price randomly"""
+        # add $4 surcharge to 0800-1100 M-F
         
         base_price = randint(5, 9)
+
+        order_hour = str(datetime.now().time())[0:2]
+
+        if order_hour >= '08' and order_hour < '11':
+            base_price += 4
+        
         return base_price
+
 
     def get_total(self):
         """Calculate price."""
@@ -32,12 +42,17 @@ class AbstractMelonOrder(object):
             base_price *= 1.5
 
         total = (1 + self.tax) * self.qty * base_price
+
+        self.order_total = total
+
         return total
+
 
     def mark_shipped(self):
         """Set shipped to true."""
 
         self.shipped = True
+
 
     def get_country_code(self):
         """Return the country code."""
