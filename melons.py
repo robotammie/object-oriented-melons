@@ -1,5 +1,5 @@
 """This file should have our order classes in it."""
-
+from random import randint
 
 class AbstractMelonOrder(object):
     """Parent class for all melon orders"""
@@ -16,10 +16,17 @@ class AbstractMelonOrder(object):
         self.country_code = country_code
         self.shipped = False
 
+    def get_base_price(self):
+        """Activates Splurge Pricing by setting the base price randomly"""
+        
+        base_price = randint(5, 9)
+        return base_price
+
     def get_total(self):
         """Calculate price."""
 
-        base_price = 5
+        base_price = self.get_base_price()
+        # print base_price
 
         if self.species == "Christmas melon":
             base_price *= 1.5
@@ -41,18 +48,21 @@ class AbstractMelonOrder(object):
 class DomesticMelonOrder(AbstractMelonOrder):
     """A domestic (in the US) melon order."""
 
+    order_type = "domestic"
+    tax = 0.08    
+
     def __init__(self, species, qty, country_code='US'):
         """Initialize melon order attributes"""
 
         super(DomesticMelonOrder, self).__init__(species,
                                                  qty,
                                                  country_code)
-        self.order_type = "domestic"
-        self.tax = 0.08
-
 
 class InternationalMelonOrder(AbstractMelonOrder):
     """An international (non-US) melon order."""
+
+    order_type = "international"
+    tax = 0.17
 
     def __init__(self, species, qty, country_code):
         """Initialize melon order attributes"""
@@ -60,10 +70,6 @@ class InternationalMelonOrder(AbstractMelonOrder):
         super(InternationalMelonOrder, self).__init__(species,
                                                       qty,
                                                       country_code)
-        self.order_type = "international"
-        self.tax = 0.17
-
-
 
     def get_total(self):
         """Calculate price."""
@@ -77,19 +83,23 @@ class InternationalMelonOrder(AbstractMelonOrder):
 
         return total
 
-class USGovernmentOrder(DomesticMelonOrder):
+class USGovernmentOrderMixin(object):
     """A melon order from the US Government"""
 
-    def __init__(self, species, qty):
-        """Initialize melon order attributes"""
-
-        super(USGovernmentOrder, self).__init__(species,
-                                                qty)
-        self.tax = 0
-        self.passed_inspection = False
+    tax = 0
+    passed_inspection = False
 
     def mark_inspection(self):
         """Mark order as inspected"""
 
         self.passed_inspection = True
 
+class USGDomestic(USGovernmentOrderMixin, DomesticMelonOrder):
+    """US Government order to a domestic address"""
+
+    pass
+
+class USGInternational(USGovernmentOrderMixin, InternationalMelonOrder):
+    """US Government order to an international address (APO, FPO, Embassy)"""
+
+    pass
